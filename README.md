@@ -2,7 +2,7 @@
 
 This repository contains all VBA functions as developed and used by Hydroconsult, The Netherlands.
 
-We distinguis functions for:
+We distinguish functions for:
 
 * Data management
   * Advanced lookup functions
