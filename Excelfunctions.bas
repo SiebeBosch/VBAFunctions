@@ -14,8 +14,8 @@ Option Explicit
 '0617682689               '
 '-------------------------'
 
-'VERSIE 4.93
-'bovenstaande regel is bedoeld om het declareren van elke variabele verplicht te maken
+'VERSIE 4.94
+    'bovenstaande regel is bedoeld om het declareren van elke variabele verplicht te maken
 'Beschikbare functies en routines:
 
 'getallenreeksen:
@@ -764,24 +764,24 @@ Public Function InterpolateRangeFromRange(XYRange As Range, ResultsRange As Rang
     XYData = XYRange
   
     'read the output range
-    Dim Results As Variant
-    ReDim Results(ResultsRange.Rows.Count, ResultsRange.Columns.Count)
-    Results = ResultsRange
+    Dim results As Variant
+    ReDim results(ResultsRange.Rows.Count, ResultsRange.Columns.Count)
+    results = ResultsRange
     
-    For r = 1 To UBound(Results, 1)
-      XLookup = Results(r, 1)
+    For r = 1 To UBound(results, 1)
+      XLookup = results(r, 1)
       
       If XLookup < XYData(1, 1) Then
-        Results(r, 2) = XYData(1, 2)
+        results(r, 2) = XYData(1, 2)
       ElseIf XLookup > XYData(UBound(XYData, 1), 1) Then
-        Results(r, 2) = XYData(UBound(XYData, 1), 2)
+        results(r, 2) = XYData(UBound(XYData, 1), 2)
       Else
         For i = 1 To UBound(XYData, 1)
           CurX = XYData(i, 1)
           NextX = XYData(i + 1, 1)
           
           If CurX <= XLookup And NextX >= XLookup Then
-            Results(r, 2) = Interpolate(XYData(i, 1), XYData(i, 2), XYData(i + 1, 1), XYData(i + 1, 2), XLookup, BlockInterpolation)
+            results(r, 2) = Interpolate(XYData(i, 1), XYData(i, 2), XYData(i + 1, 1), XYData(i + 1, 2), XLookup, BlockInterpolation)
             Exit For
           End If
         Next
@@ -789,7 +789,7 @@ Public Function InterpolateRangeFromRange(XYRange As Range, ResultsRange As Rang
     Next
   End If
   
-  Call PrintArray(Results, ResultsRange)
+  Call PrintArray(results, ResultsRange)
 
 End Function
 
@@ -3357,26 +3357,26 @@ Public Function PAIR_LOOKUP_WORKSHEET(Bereik As Range, IDRow As Integer, LookupV
     Loop
     End Function
 
-Public Sub PAIR_LOOKUP_ACTIVEX(InputRange As Range, InputIDRow As Integer, OutputRange As Range, ProgressRange As Range)
+Public Sub PAIR_LOOKUP_ACTIVEX(InputRange As Range, InputIDRow As Integer, outputRange As Range, ProgressRange As Range)
     'this function looks up a value in tables where every item has TWO columns
     'in the input range we expect the column containing the looked up value to be the same as the one containing the ID
     'in the input range we expect the column containing the return value to be immediately to the right of the lookup column
     Dim ro As Integer, co As Integer, ri As Integer, ci As Integer, n As Long
     Dim LookupID As String, LookupVal As Variant
     Dim MaxNum As Long
-    MaxNum = (OutputRange.Rows.Count - 1) * (OutputRange.Columns.Count - 1)
-    For ro = 2 To OutputRange.Rows.Count
-        For co = 2 To OutputRange.Columns.Count
+    MaxNum = (outputRange.Rows.Count - 1) * (outputRange.Columns.Count - 1)
+    For ro = 2 To outputRange.Rows.Count
+        For co = 2 To outputRange.Columns.Count
             n = n + 1
             ProgressRange.Cells(1, 1) = n / MaxNum
-            LookupID = OutputRange.Cells(ro, 1)
-            LookupVal = OutputRange.Cells(1, co)
+            LookupID = outputRange.Cells(ro, 1)
+            LookupVal = outputRange.Cells(1, co)
             
             For ci = 1 To InputRange.Columns.Count
                 If InputRange.Cells(InputIDRow, ci) = LookupID Then
                     For ri = 1 To InputRange.Rows.Count
                         If InputRange.Cells(ri, ci) = LookupVal Then
-                            OutputRange.Cells(ro, co) = InputRange.Cells(ri, ci + 1)
+                            outputRange.Cells(ro, co) = InputRange.Cells(ri, ci + 1)
                             Exit For
                         End If
                     Next
@@ -4857,7 +4857,7 @@ Public Sub ExtraResistance(UpstreamTabulatedProfileRange As Range, TabulatedStru
     
 End Sub
 
-Public Function WettedPerimeterFromYZProfile(YZProfileRange As Range, Waterlevel As Double) As Double
+Public Function WettedPerimeterFromYZProfile(YZProfileRange As Range, waterLevel As Double) As Double
     
     'this function calculates the wetted perimeter for a given waterlevel in an YZ type cross section
     Dim myPerimeter As Double
@@ -4873,26 +4873,26 @@ Public Function WettedPerimeterFromYZProfile(YZProfileRange As Range, Waterlevel
         Y2 = YZProfileRange.Cells(i + 1, 1)
         Z1 = YZProfileRange.Cells(i, 2)
         Z2 = YZProfileRange.Cells(i + 1, 2)
-        If Waterlevel < Z1 And Waterlevel < Z2 Then
+        If waterLevel < Z1 And waterLevel < Z2 Then
             'do nothing
-        ElseIf Waterlevel >= Z1 And Waterlevel >= Z2 Then
+        ElseIf waterLevel >= Z1 And waterLevel >= Z2 Then
             'this entire section is underwater add the diagonal to our perimeter
             myPerimeter = myPerimeter + PYTHAGORAS(Z2 - Z2, Y1 - Y2)
-        ElseIf Waterlevel >= Z1 And Waterlevel < Z2 Then
+        ElseIf waterLevel >= Z1 And waterLevel < Z2 Then
             'only the left section is under water. Find the Y-value where this section emerges from the water
-            y = Interpolate(Z1, Z2, Y1, Y2, Waterlevel)
-            myPerimeter = myPerimeter + PYTHAGORAS(Z1 - Waterlevel, Y1 - y)
-        ElseIf Waterlevel < Z1 And Waterlevel >= Z2 Then
+            y = Interpolate(Z1, Z2, Y1, Y2, waterLevel)
+            myPerimeter = myPerimeter + PYTHAGORAS(Z1 - waterLevel, Y1 - y)
+        ElseIf waterLevel < Z1 And waterLevel >= Z2 Then
             'only the right section is under water. Find the Y-value where this section emerges from the water
-            y = Interpolate(Z2, Z2, Y1, Y2, Waterlevel)
-            myPerimeter = myPerimeter + PYTHAGORAS(Z2 - Waterlevel, Y2 - y)
+            y = Interpolate(Z2, Z2, Y1, Y2, waterLevel)
+            myPerimeter = myPerimeter + PYTHAGORAS(Z2 - waterLevel, Y2 - y)
         End If
     Next
     WettedPerimeterFromYZProfile = myPerimeter
 End Function
 
 
-Public Function WettedAreaFromYZProfile(YZProfileRange As Range, Waterlevel As Double) As Double
+Public Function WettedAreaFromYZProfile(YZProfileRange As Range, waterLevel As Double) As Double
     
     'this function calculates the wetted area for a given waterlevel in an YZ type cross section
     Dim myArea As Double
@@ -4912,20 +4912,20 @@ Public Function WettedAreaFromYZProfile(YZProfileRange As Range, Waterlevel As D
         Z2 = YZProfileRange.Cells(i + 1, 2)
         Zmax = Application.WorksheetFunction.max(Z1, Z2)
         Zmin = Application.WorksheetFunction.Min(Z1, Z2)
-        If Waterlevel < Z1 And Waterlevel < Z2 Then
+        If waterLevel < Z1 And waterLevel < Z2 Then
             'do nothing
-        ElseIf Waterlevel >= Z1 And Waterlevel >= Z2 Then
+        ElseIf waterLevel >= Z1 And waterLevel >= Z2 Then
             'this entire section is submerged so add the area
-            myArea = myArea + (Waterlevel - Zmax) * (Y2 - Y1) 'the rectangular part
+            myArea = myArea + (waterLevel - Zmax) * (Y2 - Y1) 'the rectangular part
             myArea = myArea + (Zmax - Zmin) * (Y2 - Y1) / 2   'the triangular part
-        ElseIf Waterlevel >= Z1 And Waterlevel < Z2 Then
+        ElseIf waterLevel >= Z1 And waterLevel < Z2 Then
             'only the left section is under water. Find the Y-value where this section emerges from the water
-            y = Interpolate(Z1, Z2, Y1, Y2, Waterlevel)
-            myArea = myArea + (Waterlevel - Zmin) * (y - Y1) / 2
-        ElseIf Waterlevel < Z1 And Waterlevel >= Z2 Then
+            y = Interpolate(Z1, Y1, Z2, Y2, waterLevel)
+            myArea = myArea + (waterLevel - Zmin) * (y - Y1) / 2
+        ElseIf waterLevel < Z1 And waterLevel >= Z2 Then
             'only the right section is under water. Find the Y-value where this section emerges from the water
-            y = Interpolate(Z2, Z2, Y1, Y2, Waterlevel)
-            myArea = myArea + (Waterlevel - Zmin) * (Y2 - y) / 2
+            y = Interpolate(Z1, Y1, Z2, Y2, waterLevel)
+            myArea = myArea + (waterLevel - Zmin) * (Y2 - y) / 2
         End If
     Next
     WettedAreaFromYZProfile = myArea
@@ -5274,7 +5274,7 @@ Public Function FrictionLossCoefFromHydraulicRadiuses(HydraulicRadiuses As Colle
     'IMPORTANT: both collections must have the same size number of records!
     'the formula for friction loss yields: 2gL/(C^2*R)
     
-    Dim Chezy As Variant
+    Dim chezy As Variant
     Dim r As Variant
     Dim F As Variant
     Dim i As Integer
@@ -5285,9 +5285,9 @@ Public Function FrictionLossCoefFromHydraulicRadiuses(HydraulicRadiuses As Colle
     For i = 1 To HydraulicRadiuses.Count
     
         'calculate the friction loss coefficient
-        Chezy = Manning2Chezy(FrictionManning, HydraulicRadiuses(i))
-        If HydraulicRadiuses(i) > 0 And Chezy > 0 Then
-            F = 2 * 9.81 * Length / (Chezy ^ 2 * HydraulicRadiuses(i))
+        chezy = Manning2Chezy(FrictionManning, HydraulicRadiuses(i))
+        If HydraulicRadiuses(i) > 0 And chezy > 0 Then
+            F = 2 * 9.81 * Length / (chezy ^ 2 * HydraulicRadiuses(i))
         Else
             F = 0
         End If
@@ -5313,7 +5313,7 @@ Public Function CollectionContainsNumericalValue(ByRef myCollection As Collectio
 End Function
 
 
-Public Function QHEVEL(Diameter As Variant, Lengte As Variant, Chezy As Variant, muin As Variant, muUit As Variant, muBuig As Variant, dH As Variant) As Variant
+Public Function QHEVEL(Diameter As Variant, Lengte As Variant, chezy As Variant, muin As Variant, muUit As Variant, muBuig As Variant, dH As Variant) As Variant
 
 Dim a As Variant
 Dim P As Variant
@@ -5323,14 +5323,14 @@ Dim mu As Variant
 a = pi * (Diameter / 2) ^ 2
 P = 2 * pi * (Diameter / 2)
 
-Friction = (2 * 9.81 * Lengte) / (Chezy ^ 2 * a / P)
+Friction = (2 * 9.81 * Lengte) / (chezy ^ 2 * a / P)
 mu = 1 / (Sqr(muin + muUit + Friction + muBuig))
 
 QHEVEL = mu * a * Sqr(2 * 9.81 * dH)
 
 End Function
 
-Public Function QDUIKER(Diameter As Variant, Lengte As Variant, Chezy As Variant, muin As Variant, muUit As Variant, dH As Variant) As Variant
+Public Function QDUIKER(Diameter As Variant, Lengte As Variant, chezy As Variant, muin As Variant, muUit As Variant, dH As Variant) As Variant
 
 Dim a As Variant
 Dim P As Variant
@@ -5340,14 +5340,14 @@ Dim mu As Variant
 a = pi * (Diameter / 2) ^ 2
 P = 2 * pi * (Diameter / 2)
 
-Friction = (2 * 9.81 * Lengte) / (Chezy ^ 2 * a / P)
+Friction = (2 * 9.81 * Lengte) / (chezy ^ 2 * a / P)
 mu = 1 / (Sqr(muin + muUit + Friction))
 
 QDUIKER = mu * a * Sqr(2 * 9.81 * dH)
 
 End Function
 
-Public Function QDUIKERRECHTHOEK(BOB As Variant, Breedte As Variant, Hoogte As Variant, Lengte As Variant, Chezy As Variant, muin As Variant, muUit As Variant, h1 As Variant, h2 As Variant) As Variant
+Public Function QDUIKERRECHTHOEK(BOB As Variant, Breedte As Variant, Hoogte As Variant, Lengte As Variant, chezy As Variant, muin As Variant, muUit As Variant, h1 As Variant, h2 As Variant) As Variant
 
 Dim a As Variant
 Dim P As Variant
@@ -5365,7 +5365,7 @@ Else
   P = Breedte + (h1 - BOB) * 2
 End If
 
-Friction = (2 * 9.81 * Lengte) / (Chezy ^ 2 * a / P)
+Friction = (2 * 9.81 * Lengte) / (chezy ^ 2 * a / P)
 mu = 1 / (Sqr(muin + muUit + Friction))
 
 QDUIKERRECHTHOEK = mu * a * Sqr(2 * 9.81 * (h1 - h2))
@@ -5441,7 +5441,7 @@ End If
 
 End Function
 
-Public Function QREHBOCKWEIR(Waterlevel As Double, CrestLevel As Double, BedLevel As Double, CrestWidth As Double) As Double
+Public Function QREHBOCKWEIR(waterLevel As Double, CrestLevel As Double, BedLevel As Double, CrestWidth As Double) As Double
     'see handboek debietmeting https://edepot.wur.nl/216512
     Dim Q As Double
     Dim Ce As Double
@@ -5449,13 +5449,13 @@ Public Function QREHBOCKWEIR(Waterlevel As Double, CrestLevel As Double, BedLeve
     Dim h1 As Double
     Dim he As Double
     
-    h1 = Waterlevel - CrestLevel    'overstorthoogte
+    h1 = waterLevel - CrestLevel    'overstorthoogte
     P = CrestLevel - BedLevel       'apexhoogte (hoogte overstortrand boven bovenstroomse bodem)
     he = h1 + 0.0012                'effectieve overstortende straal
            
     Ce = 0.602 + 0.083 * h1 / P     'NB: is door Boiten zelf ter discussie gesteld. Niet meer gebruiken?
     
-    If Waterlevel > CrestLevel Then
+    If waterLevel > CrestLevel Then
         QREHBOCKWEIR = Ce * 2 / 3 * Math.Sqr(2 * 9.81) * CrestWidth * he ^ (3 / 2)
     Else
         QREHBOCKWEIR = 0
@@ -5571,14 +5571,14 @@ Public Function QUNIVERSALWEIR(h1 As Variant, h2 As Variant, YRange As Range, ZR
     QUNIVERSALWEIR = Q
 End Function
 
-Public Function CeThomsonWeir(CrestLevel As Double, Waterlevel As Double, BedLevel As Double, ChannelWidth As Double) As Double
+Public Function CeThomsonWeir(CrestLevel As Double, waterLevel As Double, BedLevel As Double, ChannelWidth As Double) As Double
     'this function calculates the discharge coefficient for a Thomson weir, based on the chart in https://edepot.wur.nl/411957 (Boiten)
     'this chart was digitized and the results are plotted here
     Dim P As Double, h1 As Double, b As Double
         
     'derive the local variables
     P = CrestLevel - BedLevel
-    h1 = Waterlevel - BedLevel
+    h1 = waterLevel - BedLevel
     b = ChannelWidth
     
     Dim pB As Double
@@ -5671,7 +5671,7 @@ Public Function CeThomsonWeir(CrestLevel As Double, Waterlevel As Double, BedLev
 
 End Function
 
-Public Function CeSharpCrestedWeir(Waterlevel As Double, CrestLevel As Double, BedLevel As Double) As Double
+Public Function CeSharpCrestedWeir(waterLevel As Double, CrestLevel As Double, BedLevel As Double) As Double
     'this function computes the discharge coefficient for a sharp crested weir
     'source: http://help.floodmodeller.com/floodmodeller/Technical_Reference/1D_Nodes_Reference/Weirs/Sharp_Crested_Weir.htm
     'equations origin from Kindsvater & Carter, 1957
@@ -5679,34 +5679,34 @@ Public Function CeSharpCrestedWeir(Waterlevel As Double, CrestLevel As Double, B
     'where:
     'h1 = head above crest = waterlevel - crest elevation
     'p1 = apex (crest elevation - bed level)
-    CeSharpCrestedWeir = 0.602 + 0.075 * (Waterlevel - CrestLevel) / (CrestLevel - BedLevel)
+    CeSharpCrestedWeir = 0.602 + 0.075 * (waterLevel - CrestLevel) / (CrestLevel - BedLevel)
 End Function
 
-Public Function QUnsuppressedRectangularWeir(Waterlevel As Double, CrestLevel As Double, CrestWidth As Double) As Double
+Public Function QUnsuppressedRectangularWeir(waterLevel As Double, CrestLevel As Double, CrestWidth As Double) As Double
     'this function calculates the discharge over an unsuppressed sharp-crested rectangular weir.
     'this type of weir has no sideway-contraction and its width matches that of the channel
     'source; https://www.brighthubengineering.com/hydraulics-civil-engineering/65880-open-channel-flow-measurement-5-the-rectangular-weir/
     'in S.I. the equation reads: Q = 1.84 * B * H^1.5
-    If Waterlevel > CrestLevel Then
-        QUnsuppressedRectangularWeir = 1.84 * CrestWidth * (Waterlevel - CrestLevel) ^ (3 / 2)
+    If waterLevel > CrestLevel Then
+        QUnsuppressedRectangularWeir = 1.84 * CrestWidth * (waterLevel - CrestLevel) ^ (3 / 2)
     Else
         QUnsuppressedRectangularWeir = 0
     End If
 End Function
 
-Public Function QContractedRectangularWeir(Waterlevel As Double, CrestLevel As Double, CrestWidth As Double) As Double
+Public Function QContractedRectangularWeir(waterLevel As Double, CrestLevel As Double, CrestWidth As Double) As Double
     'this function calculates the discharge over a contracted sharp-crested rectangular weir.
     'this type of weir has sideway-contraction since its crest is contained inside a construction of wing walls
     'source: https://www.brighthubengineering.com/hydraulics-civil-engineering/65880-open-channel-flow-measurement-5-the-rectangular-weir/
     'in S.I. the equation reads: Q = 1.84 * (L - 0.2H)*H^1.5
-    If Waterlevel > CrestLevel Then
-        QContractedRectangularWeir = 1.84 * (CrestWidth - 0.2 * (Waterlevel - CrestLevel)) * (Waterlevel - CrestLevel) ^ 1.5
+    If waterLevel > CrestLevel Then
+        QContractedRectangularWeir = 1.84 * (CrestWidth - 0.2 * (waterLevel - CrestLevel)) * (waterLevel - CrestLevel) ^ 1.5
     Else
         QContractedRectangularWeir = 0
     End If
 End Function
 
-Public Function QTHOMSONWEIR(Waterlevel As Double, CrestLevel As Double, BedLevel As Double, ChannelWidth As Double) As Double
+Public Function QTHOMSONWEIR(waterLevel As Double, CrestLevel As Double, BedLevel As Double, ChannelWidth As Double) As Double
     'note: the angle is the angle between both legs of the V-shape, in degrees
     'https://edepot.wur.nl/411957 (Boiten et. al.) contains a detailed description for this type of weir
     'it also contains a chart that provides ce as a function of h1/p
@@ -5721,8 +5721,8 @@ Public Function QTHOMSONWEIR(Waterlevel As Double, CrestLevel As Double, BedLeve
     AngleDegrees = 90
     P = CrestLevel - BedLevel       'apex
     b = ChannelWidth
-    h1 = Waterlevel - CrestLevel    'waterhoogte min laagste kruin (het puntje)
-    Ce = CeThomsonWeir(CrestLevel, Waterlevel, BedLevel, ChannelWidth)
+    h1 = waterLevel - CrestLevel    'waterhoogte min laagste kruin (het puntje)
+    Ce = CeThomsonWeir(CrestLevel, waterLevel, BedLevel, ChannelWidth)
        
     Dim he As Double
     Dim kh As Double
@@ -5771,9 +5771,9 @@ Public Function OutletLoss(outletlosscoef As Variant, Astruc As Variant, Achanne
     End If
 End Function
 
-Public Function FrictionLoss(Length As Variant, Chezy As Variant, Rstruc As Variant) As Double
-    If Chezy > 0 And Rstruc > 0 Then
-        FrictionLoss = (2 * 9.81 * Length) / (Chezy ^ 2 * Rstruc)
+Public Function FrictionLoss(Length As Variant, chezy As Variant, Rstruc As Variant) As Double
+    If chezy > 0 And Rstruc > 0 Then
+        FrictionLoss = (2 * 9.81 * Length) / (chezy ^ 2 * Rstruc)
     Else
         FrictionLoss = 0
     End If
@@ -5791,7 +5791,7 @@ Public Function QABUTMENTBRIDGE(h1 As Variant, h2 As Variant, ProfileVerticalShi
     Dim mu As Variant
     Dim muoutlet As Variant
     Dim mufric As Variant
-    Dim Chezy As Variant
+    Dim chezy As Variant
     
     'hydraulic variables
     Dim Abridge As Variant, Pbridge As Variant, Rbridge As Variant
@@ -5807,11 +5807,11 @@ Public Function QABUTMENTBRIDGE(h1 As Variant, h2 As Variant, ProfileVerticalShi
     'determine the hydraulic properties
     Call TabulatedHydraulicProperties(BridgeTableProfileZRange, BridgeTableProfileWRange, BridgeDepth, Abridge, Pbridge, Rbridge)
     Call YZHydraulicProperties(ProfileYRange, ProfileZRange, ProfileDepth, AProfile, PProfile, RProfile)
-    Chezy = Manning2Chezy(nManning, Rbridge)
+    chezy = Manning2Chezy(nManning, Rbridge)
     
     'calculate the energy loss coefficients
     muoutlet = OutletLoss(outletlosscoef, Abridge, AProfile)
-    mufric = FrictionLoss(Length, Chezy, Rbridge)
+    mufric = FrictionLoss(Length, chezy, Rbridge)
     mu = EnergyLoss(muinlet, muoutlet, mufric)
     
     If MaximizeMu Then mu = Application.WorksheetFunction.Min(mu, 1)
@@ -5826,22 +5826,22 @@ Public Function QABUTMENTBRIDGEBASIC(mu As Double, Abridge As Double, h1 As Doub
 End Function
 
 
-Public Function TabulatedWettedPerimeterByWaterlevel(Waterlevel As Variant, ZRange As Range, WRange As Range, ProfileVerticalShift As Variant) As Variant
+Public Function TabulatedWettedPerimeterByWaterlevel(waterLevel As Variant, ZRange As Range, WRange As Range, ProfileVerticalShift As Variant) As Variant
     Dim a As Variant
     Dim P As Variant
     Dim r As Variant
     Dim Depth As Variant
-    Depth = Waterlevel - ZRange.Cells(1, 1) - ProfileVerticalShift
+    Depth = waterLevel - ZRange.Cells(1, 1) - ProfileVerticalShift
     Call TabulatedHydraulicProperties(ZRange, WRange, Depth, a, P, r)
     TabulatedWettedPerimeterByWaterlevel = P
 End Function
 
-Public Function TabulatedHydraulicRadiusByWaterlevel(Waterlevel As Variant, ZRange As Range, WRange As Range, ProfileVerticalShift As Variant) As Variant
+Public Function TabulatedHydraulicRadiusByWaterlevel(waterLevel As Variant, ZRange As Range, WRange As Range, ProfileVerticalShift As Variant) As Variant
     Dim a As Variant
     Dim P As Variant
     Dim r As Variant
     Dim Depth As Variant
-    Depth = Waterlevel - ZRange.Cells(1, 1) - ProfileVerticalShift
+    Depth = waterLevel - ZRange.Cells(1, 1) - ProfileVerticalShift
     Call TabulatedHydraulicProperties(ZRange, WRange, Depth, a, P, r)
     TabulatedHydraulicRadiusByWaterlevel = r
 End Function
@@ -5872,7 +5872,7 @@ Public Function DHGEVULDERONDEDUIKER(Q As Variant, d As Variant, L As Variant, n
   'dh = Q^2 / (mu^2 * A^2 * 2g)
   
   Dim mu As Variant
-  Dim Chezy As Variant
+  Dim chezy As Variant
   Dim zf As Variant 'ruwheidsverlies
   Dim a As Variant, P As Variant, r As Variant 'natte doorsnede, natte omtrek en hydraulische straal
   
@@ -5880,8 +5880,8 @@ Public Function DHGEVULDERONDEDUIKER(Q As Variant, d As Variant, L As Variant, n
     a = 3.141592 * (d / 2) ^ 2
     P = 2 * 3.141592 * (d / 2)
     r = a / P
-    Chezy = Manning2Chezy(n_manning, r)
-    zf = (2 * 9.81 * L) / (Chezy ^ 2 * r)
+    chezy = Manning2Chezy(n_manning, r)
+    zf = (2 * 9.81 * L) / (chezy ^ 2 * r)
     mu = 1 / Sqr(zi + zo + zf)
     DHGEVULDERONDEDUIKER = Q ^ 2 / (mu ^ 2 * a ^ 2 * 2 * 9.81)
   
@@ -5893,7 +5893,7 @@ Public Function DHRONDEDUIKER(Q As Variant, d As Variant, L As Variant, h1 As Va
   'dh = Q^2 / (mu^2 * A^2 * 2g)
   
   Dim mu As Variant
-  Dim Chezy As Variant
+  Dim chezy As Variant
   Dim zf As Variant 'ruwheidsverlies
   Dim a As Variant, P As Variant, r As Variant 'natte doorsnede, natte omtrek en hydraulische straal
   
@@ -5901,8 +5901,8 @@ Public Function DHRONDEDUIKER(Q As Variant, d As Variant, L As Variant, h1 As Va
     a = OPPERVLAKAFGEPLATTECIRKEL(d / 2, BOB1 + d / 2, h1)
     P = NATTEOMTREKAFGEPLATTECIRKEL(d / 2, BOB1 + d / 2, h1)
     r = a / P
-    Chezy = Manning2Chezy(n_manning, r)
-    zf = (2 * 9.81 * L) / (Chezy ^ 2 * r)
+    chezy = Manning2Chezy(n_manning, r)
+    zf = (2 * 9.81 * L) / (chezy ^ 2 * r)
     mu = 1 / Sqr(zi + zo + zf)
     DHRONDEDUIKER = Q ^ 2 / (mu ^ 2 * a ^ 2 * 2 * 9.81)
   
@@ -5919,12 +5919,12 @@ Public Function WidthOrifice(Q As Variant, h1 As Variant, Drempel As Variant, Co
 
 End Function
 
-Public Function HydraulicRadius(a As Variant, P As Variant) As Variant
+Public Function hydraulicRadius(a As Variant, P As Variant) As Variant
   'calculates the hydraulic radius from wetted area and wetted perimeter
   If P <= 0 Or a <= 0 Then
-    HydraulicRadius = 0
+    hydraulicRadius = 0
   Else
-    HydraulicRadius = a / P
+    hydraulicRadius = a / P
   End If
 End Function
 
@@ -5932,13 +5932,13 @@ Public Function Manning2Chezy(n_manning As Variant, r As Variant) As Variant
   'computes the Chezy roughness value from manning's coefficient and the hydraulic radius
   Manning2Chezy = r ^ (1 / 6) / n_manning
 End Function
-Public Function Chezy2Manning(Chezy As Variant, r As Variant) As Variant
-  Chezy2Manning = r ^ (1 / 5) / Chezy
+Public Function Chezy2Manning(chezy As Variant, r As Variant) As Variant
+  Chezy2Manning = r ^ (1 / 5) / chezy
 End Function
-Public Function Chezy(c As Variant, Depth As Variant, Width As Variant, bedslope As Variant) As Variant
+Public Function chezy(c As Variant, Depth As Variant, Width As Variant, bedslope As Variant) As Variant
     Dim Q As Variant
     Q = Depth * Width * c * Sqr((Depth * Width) / (Width + 2 * Depth) * bedslope)
-    Chezy = Q
+    chezy = Q
 End Function
 
 Public Function MaatgevendeAfvoer(Oppervlak_ha As Variant, Optional Aanvoer_lpspha As Variant = 1.5) As Variant
@@ -7860,12 +7860,12 @@ Public Function TabulatedWettedAreaByDepth(YRange As Range, ZRange As Range, Dep
 End Function
 
 
-Public Function TabulatedWettedAreaByWaterlevel(Waterlevel As Variant, ZRange As Range, WRange As Range, ProfileVerticalShift As Variant) As Variant
+Public Function TabulatedWettedAreaByWaterlevel(waterLevel As Variant, ZRange As Range, WRange As Range, ProfileVerticalShift As Variant) As Variant
     Dim a As Variant
     Dim P As Variant
     Dim r As Variant
     Dim Depth As Variant
-    Depth = Waterlevel - ZRange.Cells(1, 1) - ProfileVerticalShift
+    Depth = waterLevel - ZRange.Cells(1, 1) - ProfileVerticalShift
     Call TabulatedHydraulicProperties(ZRange, WRange, Depth, a, P, r)
     TabulatedWettedAreaByWaterlevel = a
 End Function
@@ -11829,8 +11829,8 @@ Public Function getNodeStatsFromSobekCase(SbkCaseDir As String, ParIdx As Long) 
   Dim myHis As ODSSVR20.clsODSServer
   Dim TpFileContent As clsNetworkTPFileContent
   Set myHis = New ODSSVR20.clsODSServer
-  Dim Results As Collection
-  Set Results = New Collection
+  Dim results As Collection
+  Set results = New Collection
   
   Set TpFileContent = New clsNetworkTPFileContent
   Call TpFileContent.Read(tpFile)
@@ -11886,11 +11886,11 @@ Public Function getNodeStatsFromSobekCase(SbkCaseDir As String, ParIdx As Long) 
         myLoc.x = myNode.x
         myLoc.y = myNode.y
       End If
-      Call Results.Add(myLoc)
+      Call results.Add(myLoc)
     Next
   End If
   
-  Set getNodeStatsFromSobekCase = Results
+  Set getNodeStatsFromSobekCase = results
     
   myHis.CloseFiles
   myHis.Delete HisFile
@@ -15657,7 +15657,7 @@ Public Sub GoalSeekTriple(ByRef GoalCell As Range, myGoal As Variant, Adjust As 
   Range2 = u2 - l2
   range3 = u3 - l3
   
-  Dim Results(10, 10, 10) As Variant
+  Dim results(10, 10, 10) As Variant
   
   For nIter = 1 To nIterations
   
@@ -15680,9 +15680,9 @@ Public Sub GoalSeekTriple(ByRef GoalCell As Range, myGoal As Variant, Adjust As 
         
           'set the values for the 10x10x10 matrix
           If IsNumeric(GoalCell.value) Then
-            Results(i, j, k) = GoalCell.value
+            results(i, j, k) = GoalCell.value
           Else
-            Results(i, j, k) = 99999999
+            results(i, j, k) = 99999999
           End If
         Next
       Next
@@ -15693,7 +15693,7 @@ Public Sub GoalSeekTriple(ByRef GoalCell As Range, myGoal As Variant, Adjust As 
     For i = 1 To 10
       For j = 1 To 10
         For k = 1 To 10
-           myErr = Math.Abs(Results(i, j, k) - myGoal)
+           myErr = Math.Abs(results(i, j, k) - myGoal)
            If myErr < minErr Then
              minI = i
              minJ = j
@@ -15749,7 +15749,7 @@ Public Sub GoalSeekDouble(ByRef GoalCell As Range, myGoal As Variant, Adjust As 
   End If
 
   
-  Dim Results(10, 10) As Variant
+  Dim results(10, 10) As Variant
   
   For nIter = 1 To nIterations
   
@@ -15764,9 +15764,9 @@ Public Sub GoalSeekDouble(ByRef GoalCell As Range, myGoal As Variant, Adjust As 
       
         'set the values for the 10x10 matrix
         If IsNumeric(GoalCell.value) Then
-          Results(i, j) = GoalCell.value
+          results(i, j) = GoalCell.value
         Else
-          Results(i, j) = 99999999
+          results(i, j) = 99999999
         End If
       Next
     Next
@@ -15775,7 +15775,7 @@ Public Sub GoalSeekDouble(ByRef GoalCell As Range, myGoal As Variant, Adjust As 
     minErr = 99999999
     For i = 1 To 10
       For j = 1 To 10
-        myErr = Math.Abs(Results(i, j) - myGoal)
+        myErr = Math.Abs(results(i, j) - myGoal)
         If myErr < minErr Then
           minI = i
           minJ = j
@@ -17042,3 +17042,62 @@ Sub FitSineWave(DateRange As Range, ValuesRange As Range, AmplitudeCell As Range
     PhaseCell.value = phase
 End Sub
 
+Public Function CalculateQHRelationship(YZProfileRange As Range, slopeCell As Range, roughnessCell As Range, Optional maxDepth As Double = 10, Optional depthStep As Double = 0.1) As Variant
+    Dim results() As Variant
+    Dim waterLevel As Double
+    Dim wetArea As Double, wetPerimeter As Double, hydraulicRadius As Double
+    Dim chezy As Double, discharge As Double
+    Dim slope As Double, roughness As Double
+    Dim i As Long, numSteps As Long
+    Dim areaCollection As New Collection
+    Dim perimeterCollection As New Collection
+    Dim radiusCollection As Collection
+    Dim lowestPoint As Double
+    
+    ' Read slope and roughness
+    slope = slopeCell.value
+    roughness = roughnessCell.value
+    
+    ' Find the lowest point in the YZ-profile
+    lowestPoint = Application.WorksheetFunction.Min(YZProfileRange.Columns(2))
+    
+    ' Calculate number of steps
+    numSteps = Application.RoundUp(maxDepth / depthStep, 0)
+    
+    ' Initialize results array
+    ReDim results(1 To numSteps, 1 To 2)
+    
+    ' Calculate QH relationship
+    For i = 1 To numSteps
+        
+        waterLevel = lowestPoint + (i - 1) * depthStep
+                
+        ' Calculate wetted area and perimeter
+        wetArea = WettedAreaFromYZProfile(YZProfileRange, waterLevel)
+        wetPerimeter = WettedPerimeterFromYZProfile(YZProfileRange, waterLevel)
+        
+        ' Add to collections
+        areaCollection.Add wetArea
+        perimeterCollection.Add wetPerimeter
+        
+        ' Calculate hydraulic radius
+        Set radiusCollection = HydraulicRadiusFromWettedAreasAndWettedPerimeters(areaCollection, perimeterCollection)
+        hydraulicRadius = radiusCollection(1)
+        
+        ' Convert Manning's n to Chezy C
+        chezy = Manning2Chezy(roughness, hydraulicRadius)
+        
+        ' Calculate discharge using Chezy formula
+        discharge = wetArea * chezy * Sqr(hydraulicRadius * slope)
+        
+        ' Store results
+        results(i, 1) = waterLevel
+        results(i, 2) = discharge
+        
+        ' Clear collections for next iteration
+        Set areaCollection = New Collection
+        Set perimeterCollection = New Collection
+    Next i
+    
+    CalculateQHRelationship = results
+End Function
