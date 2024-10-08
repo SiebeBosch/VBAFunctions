@@ -14,7 +14,7 @@ Option Explicit
 '0617682689               '
 '-------------------------'
 
-'VERSIE 4.94
+'VERSIE 4.96
     'bovenstaande regel is bedoeld om het declareren van elke variabele verplicht te maken
 'Beschikbare functies en routines:
 
@@ -359,6 +359,7 @@ Option Explicit
 'ISBANKNUMBER                - herkent of een string een bankrekeningnummer is
 'MATCHWILDCARD               - checkt of een gegeven ID matcht met een gegeven structuur met wildcards
 'CONCATENATECOMBINATIONS     - maakt een lijst met alle unieke stringcombinaties door te permuteren
+'GetAttributeValueFromString - zoekt de waarde voor een gegeven attribuut op in een string. Bijv X in "X=508309.9 y = 4786842.744 Z=1368.026"
 
 'importeren van bestanden
 'READHMCZDATA                               - Leest waterstanden van het Hydro Meteo Centrum (ASCII formaat) in
@@ -4880,11 +4881,11 @@ Public Function WettedPerimeterFromYZProfile(YZProfileRange As Range, waterLevel
             myPerimeter = myPerimeter + PYTHAGORAS(Z2 - Z2, Y1 - Y2)
         ElseIf waterLevel >= Z1 And waterLevel < Z2 Then
             'only the left section is under water. Find the Y-value where this section emerges from the water
-            y = Interpolate(Z1, Z2, Y1, Y2, waterLevel)
+            y = Interpolate(Z1, Y1, Z2, Y2, waterLevel)
             myPerimeter = myPerimeter + PYTHAGORAS(Z1 - waterLevel, Y1 - y)
         ElseIf waterLevel < Z1 And waterLevel >= Z2 Then
             'only the right section is under water. Find the Y-value where this section emerges from the water
-            y = Interpolate(Z2, Z2, Y1, Y2, waterLevel)
+            y = Interpolate(Z1, Y1, Z2, Y2, waterLevel)
             myPerimeter = myPerimeter + PYTHAGORAS(Z2 - waterLevel, Y2 - y)
         End If
     Next
@@ -5302,14 +5303,14 @@ End Function
 
 
 Public Function CollectionContainsNumericalValue(ByRef myCollection As Collection, SearchValue As Variant) As Boolean
-    Dim i As Integer, Result As Boolean
+    Dim i As Integer, result As Boolean
     For i = 1 To myCollection.Count
         If myCollection(i) = SearchValue Then
-            Result = True
+            result = True
             Exit For
         End If
     Next
-    CollectionContainsNumericalValue = Result
+    CollectionContainsNumericalValue = result
 End Function
 
 
@@ -14701,12 +14702,12 @@ Public Function MAKEXMLTOKEN(myToken As String, myValue As String) As String
 End Function
 
 Public Function getDoubleFromXMLRecord(xmlStr As String, TokenID As String) As Variant
-  Dim Result As String
-  Result = VBA.LCase(xmlStr)
-  Result = VBA.Replace(Result, "<" & VBA.LCase(TokenID) & ">", "")
-  Result = VBA.Replace(Result, "</" & VBA.LCase(TokenID) & ">", "")
-  Result = VBA.Trim(Result)
-  getDoubleFromXMLRecord = Result
+  Dim result As String
+  result = VBA.LCase(xmlStr)
+  result = VBA.Replace(result, "<" & VBA.LCase(TokenID) & ">", "")
+  result = VBA.Replace(result, "</" & VBA.LCase(TokenID) & ">", "")
+  result = VBA.Trim(result)
+  getDoubleFromXMLRecord = result
 End Function
 
 
@@ -15185,20 +15186,20 @@ Next row
 End Function
 
 Public Function CONCATENATEALGEBRAIC(MyRange As Range, AlgebraString As String) As String
-  Dim i As Long, Result As String
+  Dim i As Long, result As String
   If MyRange.Columns.Count <> 1 Then
     MsgBox ("Error in function CONCATENATEALGEBRAIC. Range must consist of one column.")
   Else
-   Result = MyRange.Rows(1)
+   result = MyRange.Rows(1)
    For i = 2 To MyRange.Rows.Count
-     Result = Result & " " & AlgebraString & " " & MyRange.Rows(i)
+     result = result & " " & AlgebraString & " " & MyRange.Rows(i)
    Next
-   CONCATENATEALGEBRAIC = Result
+   CONCATENATEALGEBRAIC = result
   End If
 End Function
 
 Public Function CONCATENATEWITHDELIMITER(MyRange As Range, delimiter As String, Optional surroundingCharacter As String = "") As String
-  Dim Result As String
+  Dim result As String
   Dim cellValue As String
   Dim r As Long, c As Long
   
@@ -15211,14 +15212,44 @@ Public Function CONCATENATEWITHDELIMITER(MyRange As Range, delimiter As String, 
       
       ' Check if it's the first cell to avoid adding the delimiter before it
       If r = 1 And c = 1 Then
-        Result = cellValue
+        result = cellValue
       Else
-        Result = Result & delimiter & cellValue
+        result = result & delimiter & cellValue
       End If
     Next c
   Next r
   
-  CONCATENATEWITHDELIMITER = Result
+  CONCATENATEWITHDELIMITER = result
+End Function
+
+Function ConcatenateFortranStyle(rng As Range, maxDecimals As Integer, totalPositions As Integer) As String
+    Dim result As String
+    Dim cell As Range
+    Dim formattedNumber As String
+    
+    For Each cell In rng
+        If IsNumeric(cell.value) Then
+            ' Convert to scientific notation
+            formattedNumber = Format(cell.value, "0." & String(maxDecimals, "#") & "E+00")
+            
+            ' Adjust the length
+            If Len(formattedNumber) > totalPositions Then
+                ' Truncate if longer
+                formattedNumber = Left(formattedNumber, totalPositions)
+            ElseIf Len(formattedNumber) < totalPositions Then
+                ' Add trailing spaces if shorter
+                formattedNumber = formattedNumber & Space(totalPositions - Len(formattedNumber))
+            End If
+        Else
+            ' Handle non-numeric values
+            formattedNumber = Left(cell.value & Space(totalPositions), totalPositions)
+        End If
+        
+        ' Concatenate to the result
+        result = result & formattedNumber
+    Next cell
+    
+    ConcatenateFortranStyle = result
 End Function
 
 Public Sub AddWorkSheet(sheetName As String)
@@ -17082,7 +17113,12 @@ Public Function CalculateQHRelationship(YZProfileRange As Range, slopeCell As Ra
         
         ' Calculate hydraulic radius
         Set radiusCollection = HydraulicRadiusFromWettedAreasAndWettedPerimeters(areaCollection, perimeterCollection)
-        hydraulicRadius = radiusCollection(1)
+        If wetPerimeter <> 0 Then
+            hydraulicRadius = wetArea / wetPerimeter
+        Else
+            hydraulicRadius = 0
+        End If
+        
         
         ' Convert Manning's n to Chezy C
         chezy = Manning2Chezy(roughness, hydraulicRadius)
@@ -17101,3 +17137,38 @@ Public Function CalculateQHRelationship(YZProfileRange As Range, slopeCell As Ra
     
     CalculateQHRelationship = results
 End Function
+
+
+Function GetAttributeValueFromString(attributeString As String, attributeName As String, Optional attributeSeparator As String = " ", Optional nameValueSeparator As String = "=") As String
+    Dim attributes() As String
+    Dim myattribute As Variant
+    Dim i As Long
+    
+    'first clean up our string by removing any soft returns
+    attributeString = Replace(attributeString, vbCrLf, "")
+    attributeString = Replace(attributeString, vbCr, "")
+    attributeString = Replace(attributeString, vbLf, "")
+        
+    ' Split the string into individual attributes
+    attributes = Split(attributeString, attributeSeparator)
+    
+    ' Loop through each attribute
+    For i = LBound(attributes) To UBound(attributes)
+        ' Split each attribute into name and value
+        myattribute = Split(attributes(i), nameValueSeparator)
+        
+        ' Check if the attribute has both name and value
+        If UBound(myattribute) >= 1 Then
+            ' Check if the attribute name matches the one we're looking for
+            If LCase(Trim(myattribute(0))) = LCase(Trim(attributeName)) Then
+                ' Return the value if found
+                GetAttributeValueFromString = Trim(myattribute(1))
+                Exit Function
+            End If
+        End If
+    Next i
+    
+    ' If attribute is not found, return an empty string
+    GetAttributeValueFromString = ""
+End Function
+
