@@ -15238,7 +15238,7 @@ Function ConcatenateFortranStyle(rng As Range, maxDecimals As Integer, totalPosi
                 formattedNumber = Left(formattedNumber, totalPositions)
             ElseIf Len(formattedNumber) < totalPositions Then
                 ' Add trailing spaces if shorter
-                formattedNumber = formattedNumber & Space(totalPositions - Len(formattedNumber))
+                formattedNumber = Space(totalPositions - Len(formattedNumber)) & formattedNumber
             End If
         Else
             ' Handle non-numeric values
